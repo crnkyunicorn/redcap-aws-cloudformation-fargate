@@ -40,11 +40,10 @@ Metadata:
       Parameters:
         - MultiAZDatabase
         - DatabaseInstanceType
-        - DatabaseMasterPassword
     - Label:
         default: Web Tier
       Parameters:
-        - UseContainers
+        - UseContainersBoolean
         - WebInstanceType
         - WebAsgMax
         - WebAsgMin
@@ -101,8 +100,6 @@ Metadata:
         default: Use Primary and Standby Database Instances?
       DatabaseInstanceType:
         default: DB Instance Class
-      DatabaseMasterPassword:
-        default: 'DB Master Password & initial password for REDCap user "redcap_admin"'
 
       UseContainersBoolean:
         default: Use ECS Containers to deploy web tier
@@ -248,14 +245,6 @@ Parameters:
     ConstraintDescription: Must be a valid RDS instance class.
     Default: db.t3.small
     Description: The Amazon RDS database instance class (determines processing power and memory capacity of the database).
-    Type: String
-  DatabaseMasterPassword:
-    AllowedPattern: ^([a-zA-Z0-9~#%^*_+,-])*$
-    ConstraintDescription: Must have a length of 8-41 and be letters (upper or lower), numbers, and/or these special characters ~#%^*_+,-
-    Description: '[ Required ] The Amazon RDS master password (this will also be used as the initial temp password for the REDCap user "redcap_admin"). Letters, numbers, and/or these special characters ~#%^*_+,-'
-    MaxLength: 41
-    MinLength: 8
-    NoEcho: true
     Type: String
 
   UseContainersBoolean:
@@ -418,8 +407,8 @@ Conditions:
     - !Condition DeployRoute53
   UseContainers: 
     !Equals [ true, !Ref UseContainersBoolean ]
-
-
+  DontUseContainers: 
+    !Equals [ false, !Ref UseContainersBoolean ]
 
 Resources:
   certificate:
@@ -462,8 +451,6 @@ Resources:
           !Ref SESPassword
         SESRegion:
           !Ref SESRegion
-        DatabaseMasterPassword:
-          !Ref DatabaseMasterPassword
         DatabaseInstanceType:
           !Ref DatabaseInstanceType
         MultiAZDatabase:
@@ -535,10 +522,10 @@ Resources:
           !GetAtt 'VPCStack.Outputs.EBInstanceProfile'
         TempEC2InstanceProfile:
           !GetAtt 'VPCStack.Outputs.TempEC2InstanceProfile'
-      TemplateURL: https://s3.amazonaws.com/redcap-aws-cloudformation/02-rc-elasticbeanstalk.yaml
+      TemplateURL: https://cf-templates-6ckd02tuenk1-ap-southeast-2/redcap_ecs_deployment/02a-rc-ecs.yaml
 
   redcapelasticbeanstalk:
-    Condition: !Not UseContainers
+    Condition: DontUseContainers
     DependsOn: [ VPCStack ]
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -550,8 +537,6 @@ Resources:
           !Ref SESPassword
         SESRegion:
           !Ref SESRegion
-        DatabaseMasterPassword:
-          !Ref DatabaseMasterPassword
         DatabaseInstanceType:
           !Ref DatabaseInstanceType
         MultiAZDatabase:
@@ -623,7 +608,7 @@ Resources:
           !GetAtt 'VPCStack.Outputs.EBInstanceProfile'
         TempEC2InstanceProfile:
           !GetAtt 'VPCStack.Outputs.TempEC2InstanceProfile'
-      TemplateURL: https://s3.amazonaws.com/redcap-aws-cloudformation/02-rc-elasticbeanstalk.yaml
+      TemplateURL: s3://jbash-ecs-development-testing/redcap_deployment/02a-rc-ecs.yaml
   route53:
     Condition: DeployRoute53
     DependsOn: redcapelasticbeanstalk
