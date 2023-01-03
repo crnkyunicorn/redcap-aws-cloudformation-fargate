@@ -207,12 +207,6 @@ Parameters:
   Redcapver:
     Description: The version of REDCap you want to install, 'latest' for latest version (used if 'Download using REDCap API' is selected)
     Type: String
-  DatabaseMasterPassword:
-    Description: Must be letters (upper or lower), numbers, spaces, and these special characters `~#$%^&*()_+,-
-    Type: String
-    NoEcho: true
-    AllowedPattern: ^([a-zA-Z0-9`~#$%^&*()_+,\\-])*$
-    ConstraintDescription: The Amazon RDS master password. Letters, numbers, spaces, and these special characters `~#$%^&*()_+,-
   EC2KeyName:
     Description: The EC2 Key Pair to use for the Atlas/WebAPI EC2 Instances.
     Type: AWS::EC2::KeyPair::KeyName
@@ -274,8 +268,8 @@ Resources:
   RDSCluster:
     Type: AWS::RDS::DBCluster
     Properties:
-      MasterUsername: 'master'
-      MasterUserPassword: !Ref DatabaseMasterPassword
+      MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref RDSInstanceSecrets, ':SecretString:username}}' ]]
+      MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref RDSInstanceSecrets, ':SecretString:password}}' ]]
       DatabaseName: 'redcap'
       Engine: aurora-mysql
       StorageEncrypted: 'True'
@@ -333,6 +327,19 @@ Resources:
       SubnetIds:
         - !Ref SubnetDataA
         - !Ref SubnetDataB
+
+
+  # =========== Secrets Manager ===========
+  RDSInstanceSecrets: # creates a username (update 'my-username' to suit your needs) and a randomly generated password. 
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: Secrets for SQL Server RDS instance made from cloudformation template
+      Name: !Join ['-', [!Ref 'AWS::StackName', secret]]
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "master"}'
+        GenerateStringKey: 'password'
+        PasswordLength: 16
+        ExcludeCharacters: '"@/\'
 
 
 ### ECS Setup ###
