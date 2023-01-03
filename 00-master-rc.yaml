@@ -522,7 +522,7 @@ Resources:
           !GetAtt 'VPCStack.Outputs.EBInstanceProfile'
         TempEC2InstanceProfile:
           !GetAtt 'VPCStack.Outputs.TempEC2InstanceProfile'
-      TemplateURL: https://cf-templates-6ckd02tuenk1-ap-southeast-2/redcap_ecs_deployment/02a-rc-ecs.yaml
+      TemplateURL: https://cf-templates-6ckd02tuenk1-ap-southeast-2.s3.ap-southeast-2.amazonaws.com/redcap_ecs_deployment/02a-rc-ecs.yaml
 
   redcapelasticbeanstalk:
     Condition: DontUseContainers
@@ -608,7 +608,7 @@ Resources:
           !GetAtt 'VPCStack.Outputs.EBInstanceProfile'
         TempEC2InstanceProfile:
           !GetAtt 'VPCStack.Outputs.TempEC2InstanceProfile'
-      TemplateURL: https://cf-templates-6ckd02tuenk1-ap-southeast-2.s3.ap-southeast-2.amazonaws.com/redcap_ecs_deployment/02a-rc-ecs.yaml
+      TemplateURL: https://cf-templates-6ckd02tuenk1-ap-southeast-2.s3.ap-southeast-2.amazonaws.com/redcap_ecs_deployment/02-rc-elasticbeanstalk.yaml
   route53:
     Condition: DeployRoute53
     DependsOn: redcapelasticbeanstalk
