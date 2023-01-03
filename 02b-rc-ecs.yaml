@@ -230,12 +230,6 @@ Parameters:
     Type: AWS::EC2::SecurityGroup::Id
   SGData:
     Type: AWS::EC2::SecurityGroup::Id
-  ECSServiceRole:
-    Type: String
-  ECSInstanceProfile:
-    Type: String
-  TempEC2InstanceProfile:
-    Type: String
   ECSBucket:
     Type: String
     Description: 'S3 Bucket used to store the application package for Elastic Beanstalk.'
